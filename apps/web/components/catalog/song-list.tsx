@@ -9,14 +9,25 @@ import { SongCard } from "./song-card";
 type SongListProps = {
   emptyTitle?: string;
   query?: string;
+  songs?: CatalogSong[];
 };
 
-export function SongList({ emptyTitle = "No published songs yet.", query }: SongListProps) {
-  const [songs, setSongs] = useState<CatalogSong[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function SongList({ 
+  emptyTitle = "No published songs yet.", 
+  query,
+  songs: providedSongs 
+}: SongListProps) {
+  const [songs, setSongs] = useState<CatalogSong[]>(providedSongs || []);
+  const [isLoading, setIsLoading] = useState(!providedSongs);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (providedSongs) {
+      setSongs(providedSongs);
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     async function loadSongs() {
@@ -42,7 +53,7 @@ export function SongList({ emptyTitle = "No published songs yet.", query }: Song
     return () => {
       cancelled = true;
     };
-  }, [query]);
+  }, [query, providedSongs]);
 
   if (isLoading) {
     return (
