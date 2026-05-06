@@ -38,7 +38,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="mt-20 border-t border-borderSoft bg-[var(--card-bg)] px-4 py-12 sm:px-6 lg:px-8">
+    <footer className="mt-20 border-t border-borderSoft bg-slate-50 dark:bg-slate-900/50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-4">
           {/* Logo & About Section */}
@@ -81,6 +81,16 @@ export function Footer() {
                     </Link>
                   </li>
                 ))}
+                {section.title === "For Artists" && (
+                  <li>
+                    <Link
+                      href="/login"
+                      className="text-xs text-slate-400 hover:text-violet-600 transition-colors opacity-50 hover:opacity-100"
+                    >
+                      Admin Login
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
           ))}
