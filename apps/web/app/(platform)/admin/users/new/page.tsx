@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus, Mail, User, Shield, Key, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { createAdminUser, type UserRole } from "@/lib/api";
+import { createAdminUser } from "@/lib/api";
+import { UserRole } from "@/types/user-role";
 
 type CreateAdminUserFormData = {
   email: string;

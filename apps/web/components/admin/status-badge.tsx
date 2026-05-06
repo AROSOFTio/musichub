@@ -21,6 +21,10 @@ const STATUS_MAP: Record<string, string> = {
   PURPOSE: "bg-blue-50 text-blue-700 border-blue-200",
   STYLE: "bg-purple-50 text-purple-700 border-purple-200",
   AUDIENCE: "bg-orange-50 text-orange-700 border-orange-200",
+  ADMIN: "bg-rose-50 text-rose-700 border-rose-200",
+  EDITOR: "bg-amber-50 text-amber-700 border-amber-200",
+  ARTIST: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  USER: "bg-slate-50 text-slate-600 border-slate-200",
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

@@ -1,4 +1,7 @@
-export type UserRole = "USER" | "ARTIST" | "EDITOR" | "ADMIN";
+import { UserRole } from "@/types/user-role";
+
+export type { UserRole };
+
 
 
 export type SessionUser = {
