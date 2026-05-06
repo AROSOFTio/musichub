@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 import { User, Trash2, ShieldAlert, UserPlus, Search, Filter } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
