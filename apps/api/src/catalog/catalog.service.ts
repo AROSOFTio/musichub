@@ -22,6 +22,8 @@ type SongFiles = {
 const songInclude = {
   artist: true,
   genre: true,
+  language: true,
+  musicType: true,
   uploader: {
     select: {
       id: true,
@@ -655,7 +657,7 @@ export class CatalogService {
     return value === "true" || value === "1" || value === "on";
   }
 
-  private toSongResponse(song: Song & { artist: any; genre: any }, modules?: Record<string, boolean>) {
+  private toSongResponse(song: Song & { artist: any; genre: any; language?: any; musicType?: any }, modules?: Record<string, boolean>) {
     const canStream = modules?.streaming ?? true;
     const canDownload = modules?.downloads ?? true;
     const canRemix = modules?.remix ?? true;
@@ -665,6 +667,8 @@ export class CatalogService {
       slug: song.slug,
       artist: song.artist,
       genre: song.genre,
+      language: song.language ?? null,
+      musicType: song.musicType ?? null,
       coverImage: song.coverImage,
       streamUrl: canStream ? `/api/songs/${song.id}/stream` : null,
       downloadUrl: canDownload && song.allowDownload ? `/api/songs/${song.id}/download` : null,

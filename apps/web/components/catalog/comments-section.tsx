@@ -15,14 +15,15 @@ export function CommentsSection({ songId }: { songId: string }) {
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const canUseComments = hasModules(modules, [MODULE_KEYS.userRegistration, MODULE_KEYS.comments]);
 
   useEffect(() => {
-    if (!hasModules(modules, [MODULE_KEYS.userRegistration, MODULE_KEYS.comments])) {
+    if (!canUseComments) {
       setIsLoading(false);
       return;
     }
     loadComments();
-  }, [songId, modules]);
+  }, [songId, canUseComments]);
 
   const loadComments = async () => {
     try {
@@ -64,7 +65,7 @@ export function CommentsSection({ songId }: { songId: string }) {
     }
   };
 
-  if (!hasModules(modules, [MODULE_KEYS.userRegistration, MODULE_KEYS.comments])) return null;
+  if (!canUseComments) return null;
   if (isLoading) return <div className="mt-8 animate-pulse h-32 bg-slate-100 rounded-3xl" />;
 
   return (

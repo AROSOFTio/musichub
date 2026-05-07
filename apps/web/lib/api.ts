@@ -137,6 +137,8 @@ export type CatalogSong = {
   slug: string;
   artist: CatalogArtist;
   genre: CatalogGenre;
+  language?: { id: string; name: string } | null;
+  musicType?: { id: string; name: string; slug?: string } | null;
   coverImage: string | null;
   streamUrl: string | null;
   downloadUrl: string | null;
