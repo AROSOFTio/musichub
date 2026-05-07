@@ -16,30 +16,35 @@ import {
   Info,
   Mail,
   HelpCircle,
+  SlidersHorizontal,
 } from "lucide-react";
+import { MODULE_KEYS } from "@/lib/modules/module-keys";
 
 export type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  moduleKey?: string;
+  adminModuleKey?: string;
 };
 
 export const primaryNavigation: NavItem[] = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/trending", label: "Trending", icon: Flame },
-  { href: "/latest", label: "Latest", icon: Clock3 },
-  { href: "/top-50", label: "Top 50", icon: Trophy },
-  { href: "/all-time", label: "All Time", icon: Activity },
-  { href: "/genres", label: "Genres", icon: Tags },
-  { href: "/search", label: "Search", icon: Search },
-  { href: "/library", label: "Library", icon: Library },
-  { href: "/favorites", label: "Favorites", icon: Heart },
-  { href: "/playlists", label: "Playlists", icon: ListMusic },
-  { href: "/downloads", label: "Downloads", icon: Download },
+  { href: "/", label: "Home", icon: Home, moduleKey: MODULE_KEYS.home },
+  { href: "/trending", label: "Trending", icon: Flame, moduleKey: MODULE_KEYS.trending },
+  { href: "/latest", label: "Latest", icon: Clock3, moduleKey: MODULE_KEYS.latest },
+  { href: "/top-50", label: "Top 50", icon: Trophy, moduleKey: MODULE_KEYS.top50 },
+  { href: "/all-time", label: "All Time", icon: Activity, moduleKey: MODULE_KEYS.allTime },
+  { href: "/genres", label: "Genres", icon: Tags, moduleKey: MODULE_KEYS.genres },
+  { href: "/search", label: "Search", icon: Search, moduleKey: MODULE_KEYS.search },
+  { href: "/library", label: "Library", icon: Library, moduleKey: MODULE_KEYS.library },
+  { href: "/favorites", label: "Favorites", icon: Heart, moduleKey: MODULE_KEYS.favorites },
+  { href: "/playlists", label: "Playlists", icon: ListMusic, moduleKey: MODULE_KEYS.playlists },
+  { href: "/downloads", label: "Downloads", icon: Download, moduleKey: MODULE_KEYS.downloads },
+  { href: "/remix-studio", label: "Remix Studio", icon: SlidersHorizontal, moduleKey: MODULE_KEYS.remix },
 ];
 
 export const secondaryNavigation: NavItem[] = [
-  { href: "/artists", label: "Artists", icon: Mic2 },
+  { href: "/artists", label: "Artists", icon: Mic2, moduleKey: MODULE_KEYS.artists },
   { href: "/about", label: "About", icon: Info },
   { href: "/contact", label: "Contact", icon: Mail },
   { href: "/privacy", label: "Privacy", icon: Shield },
@@ -47,9 +52,9 @@ export const secondaryNavigation: NavItem[] = [
 ];
 
 export const mobileNavigation: NavItem[] = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/trending", label: "Trending", icon: Flame },
-  { href: "/search", label: "Search", icon: Search },
-  { href: "/library", label: "Library", icon: Library },
-  { href: "/downloads", label: "Downloads", icon: Download },
+  { href: "/", label: "Home", icon: Home, moduleKey: MODULE_KEYS.home },
+  { href: "/trending", label: "Trending", icon: Flame, moduleKey: MODULE_KEYS.trending },
+  { href: "/library", label: "Library", icon: Library, moduleKey: MODULE_KEYS.library },
+  { href: "/downloads", label: "Downloads", icon: Download, moduleKey: MODULE_KEYS.downloads },
+  { href: "/search", label: "Search", icon: Search, moduleKey: MODULE_KEYS.search },
 ];

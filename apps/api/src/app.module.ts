@@ -5,9 +5,11 @@ import { AdminModule } from "./admin/admin.module";
 import { AuthModule } from "./auth/auth.module";
 import { CatalogModule } from "./catalog/catalog.module";
 import { EngagementModule } from "./engagement/engagement.module";
+import { FeatureModulesModule } from "./feature-modules/feature-modules.module";
 import { validateEnv } from "./config/env.validation";
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
+import { RemixModule } from "./remix/remix.module";
 import { SupportModule } from "./support/support.module";
 
 @Module({
@@ -22,6 +24,8 @@ import { SupportModule } from "./support/support.module";
     AdminModule,
     CatalogModule,
     EngagementModule,
+    FeatureModulesModule,
+    RemixModule,
     SupportModule,
   ],
 })

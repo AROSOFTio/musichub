@@ -1,9 +1,73 @@
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcrypt";
 
+const featureModules = [
+  ["core_catalog", "Core Catalog", "Core"],
+  ["home", "Home", "Core"],
+  ["search", "Search", "Core"],
+  ["streaming", "Streaming", "Playback"],
+  ["downloads", "Downloads", "Downloads"],
+  ["remix", "Remix Studio", "Monetization"],
+  ["pro_plan", "Pro Plan", "Monetization"],
+  ["trending", "Trending", "Discovery"],
+  ["latest", "Latest", "Discovery"],
+  ["top50", "Top 50", "Discovery"],
+  ["all_time", "All Time", "Discovery"],
+  ["genres", "Genres", "Discovery"],
+  ["artists", "Artists", "Discovery"],
+  ["albums", "Albums", "Discovery"],
+  ["hero_banners", "Hero Banners", "Discovery"],
+  ["editor_picks", "Editor Picks", "Discovery"],
+  ["popular_artists", "Popular Artists", "Discovery"],
+  ["top_downloads", "Top Downloads", "Discovery"],
+  ["continue_listening", "Continue Listening", "Playback"],
+  ["browse_by_genre", "Browse by Genre", "Discovery"],
+  ["playlists", "Playlists", "Library"],
+  ["favorites", "Favorites", "Library"],
+  ["library", "Library", "Library"],
+  ["recently_played", "Recently Played", "Playback"],
+  ["comments", "Comments", "Community"],
+  ["likes", "Likes", "Community"],
+  ["follows", "Follows", "Community"],
+  ["notifications", "Notifications", "Community"],
+  ["upload", "Upload", "Upload"],
+  ["admin_dashboard", "Admin Dashboard", "Admin"],
+  ["admin_songs", "Admin Songs", "Admin"],
+  ["admin_artists", "Admin Artists", "Admin"],
+  ["admin_genres", "Admin Genres", "Admin"],
+  ["admin_albums", "Admin Albums", "Admin"],
+  ["admin_music_types", "Admin Music Types", "Admin"],
+  ["admin_hero_banners", "Admin Hero Banners", "Admin"],
+  ["admin_editor_picks", "Admin Editor Picks", "Admin"],
+  ["admin_trending", "Admin Trending", "Admin"],
+  ["admin_users", "Admin Users", "Admin"],
+  ["admin_messages", "Admin Messages", "Admin"],
+  ["admin_modules", "Admin Modules", "Admin"],
+  ["admin_settings", "Admin Settings", "Admin"],
+] as const;
+
+const coreModules = new Set(["core_catalog", "home", "admin_modules", "admin_settings"]);
+
 const prisma = new PrismaClient();
 
 async function main() {
+  await Promise.all(
+    featureModules.map(([key, name, category], sortOrder) =>
+      prisma.featureModule.upsert({
+        where: { key },
+        update: { name, category, sortOrder, isCore: coreModules.has(key) },
+        create: {
+          key,
+          name,
+          category,
+          description: `${name} feature module.`,
+          sortOrder,
+          isCore: coreModules.has(key),
+        },
+      }),
+    ),
+  );
+
   const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD?.trim();
   const adminDisplayName =

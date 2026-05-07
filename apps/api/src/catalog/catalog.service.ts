@@ -4,10 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { Role, Song } from "@prisma/client";
+import { Role, Song, SongStatus } from "@prisma/client";
 import path from "path";
 
 import { AuthenticatedUser } from "../auth/decorators/current-user.decorator";
+import { FeatureModulesService } from "../feature-modules/feature-modules.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { SongUploadDto } from "./dto/song-upload.dto";
 import { LocalStorageService } from "./local-storage.service";
@@ -36,10 +37,12 @@ export class CatalogService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: LocalStorageService,
+    private readonly featureModules: FeatureModulesService,
   ) {}
 
   async listPublished(query?: string) {
     const search = query?.trim();
+    const modules = await this.featureModules.getFlags("public");
     const songs = await this.prisma.song.findMany({
       where: {
         isPublished: true,
@@ -58,7 +61,7 @@ export class CatalogService {
       take: 50,
     });
 
-    return songs.map((song) => this.toSongResponse(song));
+    return songs.map((song) => this.toSongResponse(song, modules));
   }
 
   async listManageable(user: AuthenticatedUser) {
@@ -68,7 +71,8 @@ export class CatalogService {
       orderBy: { createdAt: "desc" },
     });
 
-    return songs.map((song) => this.toSongResponse(song));
+    const modules = await this.featureModules.getFlags("public");
+    return songs.map((song) => this.toSongResponse(song, modules));
   }
 
   async getPublishedBySlug(slug: string) {
@@ -81,13 +85,15 @@ export class CatalogService {
       throw new NotFoundException("Song was not found.");
     }
 
-    return this.toSongResponse(song);
+    return this.toSongResponse(song, await this.featureModules.getFlags("public"));
   }
 
   // ── Discovery ──────────────────────────────────────────────────────────
 
   /** Trending: score = plays*0.5 + downloads*0.4 + recency_boost*0.1 */
-  async getTrending(limit = 50) {
+  async getTrending(limit = 50, enforceModule = true) {
+    if (enforceModule) await this.featureModules.assertEnabled("trending", "api");
+    const modules = await this.featureModules.getFlags("public");
     const songs = await this.prisma.song.findMany({
       where: { isPublished: true },
       include: songInclude,
@@ -107,50 +113,60 @@ export class CatalogService {
     });
 
     scored.sort((a, b) => b.score - a.score);
-    return scored.slice(0, limit).map(({ song }) => this.toSongResponse(song));
+    return scored.slice(0, limit).map(({ song }) => this.toSongResponse(song, modules));
   }
 
-  async getLatest(limit = 50) {
+  async getLatest(limit = 50, enforceModule = true) {
+    if (enforceModule) await this.featureModules.assertEnabled("latest", "api");
+    const modules = await this.featureModules.getFlags("public");
     const songs = await this.prisma.song.findMany({
-      where: { isPublished: true },
+      where: { isPublished: true, status: "PUBLISHED" },
       include: songInclude,
-      orderBy: [{ releaseDate: "desc" }, { createdAt: "desc" }],
+      orderBy: { createdAt: "desc" },
       take: limit,
     });
-    return songs.map((song) => this.toSongResponse(song));
+    return songs.map((song) => this.toSongResponse(song, modules));
   }
 
   async getTop50() {
+    await this.featureModules.assertEnabled("top50", "api");
+    const modules = await this.featureModules.getFlags("public");
     const songs = await this.prisma.song.findMany({
       where: { isPublished: true },
       include: songInclude,
       orderBy: [{ downloadCount: "desc" }, { playCount: "desc" }],
       take: 50,
     });
-    return songs.map((song) => this.toSongResponse(song));
+    return songs.map((song) => this.toSongResponse(song, modules));
   }
 
   async getAllTime() {
+    await this.featureModules.assertEnabled("all_time", "api");
+    const modules = await this.featureModules.getFlags("public");
     const songs = await this.prisma.song.findMany({
       where: { isPublished: true },
       include: songInclude,
       orderBy: [{ playCount: "desc" }, { downloadCount: "desc" }],
       take: 100,
     });
-    return songs.map((song) => this.toSongResponse(song));
+    return songs.map((song) => this.toSongResponse(song, modules));
   }
 
-  async getEditorPicks(limit = 20) {
+  async getEditorPicks(limit = 20, enforceModule = true) {
+    if (enforceModule) await this.featureModules.assertEnabled("editor_picks", "api");
+    const modules = await this.featureModules.getFlags("public");
     const songs = await this.prisma.song.findMany({
       where: { isPublished: true, isEditorPick: true },
       include: songInclude,
       orderBy: { updatedAt: "desc" },
       take: limit,
     });
-    return songs.map((song) => this.toSongResponse(song));
+    return songs.map((song) => this.toSongResponse(song, modules));
   }
 
   async search(query: string) {
+    await this.featureModules.assertEnabled("search", "api");
+    const modules = await this.featureModules.getFlags("public");
     const q = query?.trim();
     if (!q) return { songs: [], artists: [], genres: [] };
 
@@ -186,7 +202,7 @@ export class CatalogService {
     ]);
 
     return {
-      songs: songs.map((s) => this.toSongResponse(s)),
+      songs: songs.map((s) => this.toSongResponse(s, modules)),
       artists,
       genres,
     };
@@ -195,6 +211,7 @@ export class CatalogService {
   // ── Genres ─────────────────────────────────────────────────────────────
 
   async listGenres() {
+    await this.featureModules.assertEnabled("genres", "api");
     return this.prisma.genre.findMany({
       orderBy: { name: "asc" },
       include: { _count: { select: { songs: true } } },
@@ -202,6 +219,7 @@ export class CatalogService {
   }
 
   async getGenreBySlug(slug: string) {
+    await this.featureModules.assertEnabled("genres", "api");
     const genre = await this.prisma.genre.findUnique({
       where: { slug },
       include: {
@@ -216,16 +234,18 @@ export class CatalogService {
     });
 
     if (!genre) throw new NotFoundException("Genre not found.");
+    const modules = await this.featureModules.getFlags("public");
 
     return {
       ...genre,
-      songs: genre.songs.map((s) => this.toSongResponse(s)),
+      songs: genre.songs.map((s) => this.toSongResponse(s, modules)),
     };
   }
 
   // ── Artists ────────────────────────────────────────────────────────────
 
   async listArtists() {
+    await this.featureModules.assertEnabled("artists", "api");
     return this.prisma.artist.findMany({
       orderBy: { name: "asc" },
       include: {
@@ -235,6 +255,7 @@ export class CatalogService {
   }
 
   async getArtistBySlug(slug: string) {
+    await this.featureModules.assertEnabled("artists", "api");
     const artist = await this.prisma.artist.findUnique({
       where: { slug },
       include: {
@@ -249,10 +270,11 @@ export class CatalogService {
     });
 
     if (!artist) throw new NotFoundException("Artist not found.");
+    const modules = await this.featureModules.getFlags("public");
 
     return {
       ...artist,
-      songs: artist.songs.map((s) => this.toSongResponse(s)),
+      songs: artist.songs.map((s) => this.toSongResponse(s, modules)),
     };
   }
 
@@ -278,53 +300,64 @@ export class CatalogService {
   // ── Home feed ─────────────────────────────────────────────────────────
 
   async getHomeFeed() {
-    const [featured, trending, latest, editorPicks, topDownloads, popularArtists, genres] =
-      await Promise.all([
-        // Featured: latest editor pick or most played song
-        this.prisma.song.findFirst({
-          where: { isPublished: true, isEditorPick: true },
-          include: songInclude,
-          orderBy: { updatedAt: "desc" },
-        }).then((s) => s ?? this.prisma.song.findFirst({
-          where: { isPublished: true },
-          include: songInclude,
-          orderBy: { playCount: "desc" },
-        })),
-        this.getTrending(8),
-        this.getLatest(8),
-        this.getEditorPicks(6),
-        this.prisma.song.findMany({
-          where: { isPublished: true },
-          include: songInclude,
-          orderBy: { downloadCount: "desc" },
-          take: 8,
-        }),
-        this.prisma.artist.findMany({
-          orderBy: { songs: { _count: "desc" } },
-          include: { _count: { select: { songs: true, followers: true } } },
-          take: 8,
-        }),
-        this.prisma.genre.findMany({
-          orderBy: { name: "asc" },
-          include: { _count: { select: { songs: true } } },
-          take: 12,
-        }),
-      ]);
+    await this.featureModules.assertEnabled("home", "api");
+    const modules = await this.featureModules.getFlags("public");
+    const feed: Record<string, any> = { modules };
 
-    return {
-      featured: featured ? this.toSongResponse(featured as any) : null,
-      trending,
-      latest,
-      editorPicks,
-      topDownloads: topDownloads.map((s) => this.toSongResponse(s)),
-      popularArtists,
-      genres,
-    };
+    if (modules.hero_banners) {
+      const banner = await this.prisma.heroBanner.findFirst({
+        where: { status: "ACTIVE" },
+        orderBy: [{ priority: "asc" }, { updatedAt: "desc" }],
+      });
+      const fallbackSong = await this.prisma.song.findFirst({
+        where: { isPublished: true, isEditorPick: true },
+        include: songInclude,
+        orderBy: { updatedAt: "desc" },
+      }).then((s) => s ?? this.prisma.song.findFirst({
+        where: { isPublished: true },
+        include: songInclude,
+        orderBy: { playCount: "desc" },
+      }));
+      feed.heroBanners = banner ? [banner] : fallbackSong ? [this.toSongResponse(fallbackSong as any, modules)] : [];
+      feed.featured = fallbackSong ? this.toSongResponse(fallbackSong as any, modules) : null;
+    }
+
+    if (modules.trending) feed.trendingNow = await this.getTrending(8, false);
+    if (modules.latest) feed.latestUploads = await this.getLatest(8, false);
+    if (modules.editor_picks) feed.editorPicks = await this.getEditorPicks(6, false);
+    if (modules.top_downloads && modules.downloads) {
+      const topDownloads = await this.prisma.song.findMany({
+        where: { isPublished: true },
+        include: songInclude,
+        orderBy: { downloadCount: "desc" },
+        take: 8,
+      });
+      feed.topDownloads = topDownloads.map((s) => this.toSongResponse(s, modules));
+    }
+    if (modules.popular_artists && modules.artists) {
+      feed.popularArtists = await this.prisma.artist.findMany({
+        orderBy: { songs: { _count: "desc" } },
+        include: { _count: { select: { songs: true, followers: true } } },
+        take: 8,
+      });
+    }
+    if (modules.browse_by_genre && modules.genres) {
+      feed.browseGenres = await this.prisma.genre.findMany({
+        orderBy: { name: "asc" },
+        include: { _count: { select: { songs: true } } },
+        take: 12,
+      });
+      feed.genres = feed.browseGenres;
+    }
+    if (modules.continue_listening) feed.continueListening = [];
+
+    return feed;
   }
 
   // ── Existing CRUD ─────────────────────────────────────────────────────
 
   async uploadSong(user: AuthenticatedUser, dto: SongUploadDto, files: SongFiles) {
+    await this.featureModules.assertEnabled("upload", "api");
     const audioFile = await this.storage.saveAudio(files.audio?.[0]);
     const coverFile = await this.storage.saveCover(files.cover?.[0]);
     const artist = await this.resolveArtist(dto, user);
@@ -350,6 +383,7 @@ export class CatalogService {
         seoDescription: dto.seoDescription?.trim() || null,
         releaseDate: dto.releaseDate ? new Date(dto.releaseDate) : new Date(),
         isPublished: this.booleanFromString(dto.isPublished, true),
+        status: this.booleanFromString(dto.isPublished, true) ? SongStatus.PUBLISHED : SongStatus.DRAFT,
         allowDownload: this.booleanFromString(dto.allowDownload, true),
         allowRemix: this.booleanFromString(dto.allowRemix, false),
       },
@@ -390,6 +424,7 @@ export class CatalogService {
     files: SongFiles,
   ) {
     const existing = await this.findManageableSong(user, id);
+    const nextIsPublished = this.booleanFromString(dto.isPublished, existing.isPublished);
     const coverFile = await this.storage.saveCover(files.cover?.[0]);
     const audioFile = files.audio?.[0] ? await this.storage.saveAudio(files.audio[0]) : null;
     const artist = dto.artistId || dto.artistName ? await this.resolveArtist(dto, user) : null;
@@ -424,7 +459,8 @@ export class CatalogService {
             : dto.releaseDate
               ? new Date(dto.releaseDate)
               : null,
-        isPublished: this.booleanFromString(dto.isPublished, existing.isPublished),
+        isPublished: nextIsPublished,
+        status: nextIsPublished && existing.status === SongStatus.DRAFT ? SongStatus.PUBLISHED : existing.status,
         allowDownload: this.booleanFromString(dto.allowDownload, existing.allowDownload),
         allowRemix: this.booleanFromString(dto.allowRemix, existing.allowRemix),
       },
@@ -441,6 +477,7 @@ export class CatalogService {
   }
 
   async resolveAudioForStream(id: string) {
+    await this.featureModules.assertEnabled("streaming", "api");
     const song = await this.prisma.song.findFirst({
       where: { id, isPublished: true },
     });
@@ -458,6 +495,7 @@ export class CatalogService {
   }
 
   async resolveAudioForDownload(id: string) {
+    await this.featureModules.assertEnabled("downloads", "api");
     const song = await this.prisma.song.findFirst({
       where: { id, isPublished: true },
       include: { artist: true },
@@ -605,7 +643,10 @@ export class CatalogService {
     return value === "true" || value === "1" || value === "on";
   }
 
-  private toSongResponse(song: Song & { artist: any; genre: any }) {
+  private toSongResponse(song: Song & { artist: any; genre: any }, modules?: Record<string, boolean>) {
+    const canStream = modules?.streaming ?? true;
+    const canDownload = modules?.downloads ?? true;
+    const canRemix = modules?.remix ?? true;
     return {
       id: song.id,
       title: song.title,
@@ -613,14 +654,14 @@ export class CatalogService {
       artist: song.artist,
       genre: song.genre,
       coverImage: song.coverImage,
-      streamUrl: `/api/songs/${song.id}/stream`,
-      downloadUrl: song.allowDownload ? `/api/songs/${song.id}/download` : null,
+      streamUrl: canStream ? `/api/songs/${song.id}/stream` : null,
+      downloadUrl: canDownload && song.allowDownload ? `/api/songs/${song.id}/download` : null,
       duration: song.duration,
       description: song.description,
       releaseDate: song.releaseDate,
       isPublished: song.isPublished,
-      allowDownload: song.allowDownload,
-      allowRemix: song.allowRemix,
+      allowDownload: canDownload && song.allowDownload,
+      allowRemix: canRemix && song.allowRemix,
       isEditorPick: (song as any).isEditorPick ?? false,
       downloadCount: song.downloadCount,
       playCount: song.playCount,

@@ -14,7 +14,6 @@ export function MobileHeader() {
       <div className="flex items-center justify-between gap-3">
         {/* Left: hamburger + logo */}
         <div className="flex items-center gap-3">
-          <MobileDrawer />
           <Logo />
         </div>
 
@@ -34,6 +33,7 @@ export function MobileHeader() {
               Dashboard
             </Link>
           )}
+          <MobileDrawer />
         </div>
       </div>
     </header>

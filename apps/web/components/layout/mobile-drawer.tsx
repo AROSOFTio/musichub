@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { X, Home, Compass, Clock, Star, Info, Shield, Mail, Menu, LayoutDashboard, LogOut } from "lucide-react";
+import { X, Menu, LayoutDashboard, LogOut } from "lucide-react";
 import { Logo } from "../ui/logo";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { primaryNavigation, secondaryNavigation } from "@/lib/navigation";
+import { filterModuleItems } from "@/lib/modules/module-registry";
+import { useModules } from "@/lib/modules/use-modules";
 
 export function MobileDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, user, logout } = useAuth();
+  const modules = useModules();
 
   useEffect(() => {
     setIsOpen(false);
@@ -35,15 +39,7 @@ export function MobileDrawer() {
     router.push("/");
   }
 
-  const navItems = [
-    { label: "Home", href: "/", icon: Home },
-    { label: "Trending", href: "/trending", icon: Compass },
-    { label: "Latest", href: "/latest", icon: Clock },
-    { label: "Editor's Picks", href: "/editor-picks", icon: Star },
-    { label: "About Us", href: "/about", icon: Info },
-    { label: "Contact", href: "/contact", icon: Mail },
-    { label: "Privacy Policy", href: "/privacy", icon: Shield },
-  ];
+  const navItems = filterModuleItems([...primaryNavigation, ...secondaryNavigation], modules);
 
   return (
     <>

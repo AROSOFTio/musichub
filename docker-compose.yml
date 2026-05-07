@@ -3,22 +3,22 @@ services:
     build:
       context: ./apps/web
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://musichub.arosoft.io/api}
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://musichub.arosoft.io}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://music.arosoft.io/api}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://music.arosoft.io}
         API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000/api}
     env_file:
       - .env
     environment:
       NODE_ENV: production
       PORT: 3000
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://musichub.arosoft.io/api}
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://musichub.arosoft.io}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://music.arosoft.io/api}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://music.arosoft.io}
       API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000/api}
     depends_on:
       api:
         condition: service_healthy
     ports:
-      - "4008:3000"
+      - "4010:3000"
     healthcheck:
       test:
         [
@@ -42,7 +42,7 @@ services:
       NODE_ENV: production
       PORT: 4000
       DATABASE_URL: ${DATABASE_URL}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4010}
+      FRONTEND_URL: ${FRONTEND_URL:-https://music.arosoft.io}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}

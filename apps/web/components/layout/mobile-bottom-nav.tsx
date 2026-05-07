@@ -4,15 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { mobileNavigation } from "@/lib/navigation";
+import { filterModuleItems } from "@/lib/modules/module-registry";
+import { useModules } from "@/lib/modules/use-modules";
 import { cn } from "@/lib/utils";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const modules = useModules();
+  const items = filterModuleItems(mobileNavigation, modules).slice(0, 5);
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-borderSoft bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
       <div className="mx-auto grid max-w-md grid-cols-5 gap-2">
-        {mobileNavigation.map((item) => {
+        {items.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (

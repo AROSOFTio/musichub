@@ -5,12 +5,17 @@ import { usePathname } from "next/navigation";
 import { Info, Mail, Shield, HelpCircle } from "lucide-react";
 
 import { primaryNavigation, secondaryNavigation } from "@/lib/navigation";
+import { filterModuleItems } from "@/lib/modules/module-registry";
+import { useModules } from "@/lib/modules/use-modules";
 import { cn } from "@/lib/utils";
 
 import { Logo } from "../ui/logo";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const modules = useModules();
+  const primaryItems = filterModuleItems(primaryNavigation, modules);
+  const secondaryItems = filterModuleItems(secondaryNavigation, modules);
 
   const infoLinks = [
     { label: "About Us", href: "/about", icon: Info },
@@ -24,7 +29,7 @@ export function Sidebar() {
       
       <div className="flex-1 overflow-y-auto mt-8 pr-2 custom-scrollbar">
         <div className="space-y-2">
-          {primaryNavigation.map((item) => {
+            {primaryItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
 
             return (
@@ -45,7 +50,7 @@ export function Sidebar() {
             Explore
           </p>
           <div className="mt-3 space-y-2">
-            {secondaryNavigation.map((item) => {
+            {secondaryItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
               return (

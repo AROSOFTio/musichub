@@ -45,6 +45,13 @@ enum BannerStatus {
   EXPIRED
 }
 
+enum RemixJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 // ─── Core Models ────────────────────────────────────────────────────────────
 
 model User {
@@ -68,6 +75,7 @@ model User {
   playHistory   PlayHistory[]
   comments      Comment[]
   notifications Notification[]
+  remixProjects RemixProject[] @relation("UserRemixProjects")
 
   @@map("users")
 }
@@ -201,6 +209,7 @@ model Song {
   playHistory  PlayHistory[]
   comments     Comment[]
   editorPicks  EditorPick[]
+  remixProjects RemixProject[] @relation("SourceSongRemixProjects")
 
   @@index([artistId])
   @@index([genreId])
@@ -388,3 +397,51 @@ model ContactMessage {
   @@map("contact_messages")
 }
 
+model FeatureModule {
+  id             String   @id @default(uuid())
+  key            String   @unique
+  name           String
+  description    String?
+  category       String
+  enabledPublic  Boolean  @default(true)
+  enabledAdmin   Boolean  @default(true)
+  enabledApi     Boolean  @default(true)
+  isCore         Boolean  @default(false)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([category, sortOrder])
+  @@map("feature_modules")
+}
+
+model RemixProject {
+  id              String         @id @default(uuid())
+  userId          String
+  sourceSongId    String
+  title           String
+  slug            String         @unique
+  status          RemixJobStatus @default(QUEUED)
+  bpm             Int?
+  pitchShift      Int            @default(0)
+  tempo           Float          @default(1)
+  volume          Float          @default(1)
+  bassBoost       Float          @default(0)
+  trebleBoost     Float          @default(0)
+  reverb          Float          @default(0)
+  echo            Float          @default(0)
+  previewFile     String?
+  outputFile      String?
+  errorMessage    String?
+  isPublished     Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user       User @relation("UserRemixProjects", fields: [userId], references: [id], onDelete: Cascade)
+  sourceSong Song @relation("SourceSongRemixProjects", fields: [sourceSongId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([sourceSongId])
+  @@index([status])
+  @@map("remix_projects")
+}

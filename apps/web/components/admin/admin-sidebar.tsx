@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -25,11 +25,17 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
+import { listAdminModules } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { MODULE_KEYS } from "@/lib/modules/module-keys";
+import { hasModule } from "@/lib/modules/module-registry";
+import { useModules } from "@/lib/modules/use-modules";
 
 type NavItem = {
   label: string;
   href: string;
   icon: React.ElementType;
+  moduleKey?: string;
   children?: { label: string; href: string }[];
 };
 
@@ -37,8 +43,9 @@ const NAV: { section: string; items: NavItem[] }[] = [
   {
     section: "Dashboard",
     items: [
-      { label: "Overview", href: "/admin/overview", icon: LayoutDashboard },
-      { label: "Users", href: "/admin/users", icon: Users },
+      { label: "Overview", href: "/admin/overview", icon: LayoutDashboard, moduleKey: MODULE_KEYS.adminDashboard },
+      { label: "Users", href: "/admin/users", icon: Users, moduleKey: MODULE_KEYS.adminUsers },
+      { label: "Modules", href: "/admin/modules", icon: Sliders, moduleKey: MODULE_KEYS.adminModules },
     ],
   },
   {
@@ -48,6 +55,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
         label: "Songs",
         href: "/admin/songs",
         icon: Music2,
+        moduleKey: MODULE_KEYS.adminSongs,
         children: [
           { label: "All Songs", href: "/admin/songs" },
           { label: "Add Song", href: "/admin/songs/new" },
@@ -61,6 +69,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
         label: "Artists",
         href: "/admin/artists",
         icon: Mic2,
+        moduleKey: MODULE_KEYS.adminArtists,
         children: [
           { label: "All Artists", href: "/admin/artists" },
           { label: "Add Artist", href: "/admin/artists/new" },
@@ -72,6 +81,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
         label: "Albums",
         href: "/admin/albums",
         icon: Library,
+        moduleKey: MODULE_KEYS.adminAlbums,
         children: [
           { label: "All Albums", href: "/admin/albums" },
           { label: "Create Album", href: "/admin/albums/new" },
@@ -81,6 +91,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
         label: "Genres",
         href: "/admin/genres",
         icon: Tag,
+        moduleKey: MODULE_KEYS.adminGenres,
         children: [
           { label: "All Genres", href: "/admin/genres" },
           { label: "Add Genre", href: "/admin/genres/new" },
@@ -90,6 +101,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
         label: "Music Types",
         href: "/admin/music-types",
         icon: Music,
+        moduleKey: MODULE_KEYS.adminMusicTypes,
         children: [
           { label: "All Types", href: "/admin/music-types" },
           { label: "Add Type", href: "/admin/music-types/new" },
@@ -106,6 +118,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
         label: "Trending",
         href: "/admin/trending",
         icon: TrendingUp,
+        moduleKey: MODULE_KEYS.adminTrending,
         children: [
           { label: "Trending Songs", href: "/admin/trending" },
           { label: "Top 50", href: "/admin/trending/top-50" },
@@ -117,6 +130,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
         label: "Editor Picks",
         href: "/admin/editor-picks",
         icon: Star,
+        moduleKey: MODULE_KEYS.adminEditorPicks,
         children: [
           { label: "Active Picks", href: "/admin/editor-picks" },
           { label: "Add Pick", href: "/admin/editor-picks/new" },
@@ -127,6 +141,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
         label: "Hero Banners",
         href: "/admin/hero-banners",
         icon: Image,
+        moduleKey: MODULE_KEYS.adminHeroBanners,
         children: [
           { label: "Active Banners", href: "/admin/hero-banners" },
           { label: "Create Banner", href: "/admin/hero-banners/new" },
@@ -138,7 +153,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
   {
     section: "Support",
     items: [
-      { label: "Messages", href: "/admin/messages", icon: Mail },
+      { label: "Messages", href: "/admin/messages", icon: Mail, moduleKey: MODULE_KEYS.adminMessages },
     ],
   },
 ];
@@ -262,18 +277,36 @@ export function AdminSidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const modules = useModules();
+  const { accessToken } = useAuth();
+  const [adminModules, setAdminModules] = useState<Record<string, boolean> | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  useEffect(() => {
+    listAdminModules(accessToken ?? undefined)
+      .then((payload) => {
+        setAdminModules(payload.flat.reduce<Record<string, boolean>>((flags, module) => {
+          flags[module.key] = module.enabledAdmin;
+          return flags;
+        }, {}));
+      })
+      .catch(() => setAdminModules(null));
+  }, [accessToken]);
+  const effectiveModules = adminModules ?? modules;
+  const navGroups = useMemo(() => NAV.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => hasModule(effectiveModules, item.moduleKey)),
+  })).filter((group) => group.items.length > 0), [effectiveModules]);
 
   // Automatically open the group containing the active link
   useEffect(() => {
-    for (const group of NAV) {
+    for (const group of navGroups) {
       for (const item of group.items) {
         if (item.children && (pathname === item.href || pathname.startsWith(item.href + "/"))) {
           setOpenGroup(item.label);
         }
       }
     }
-  }, [pathname]);
+  }, [pathname, navGroups]);
 
   const handleToggle = (label: string) => {
     setOpenGroup((prev) => (prev === label ? null : label));
@@ -295,7 +328,7 @@ export function AdminSidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        {NAV.map((group) => (
+        {navGroups.map((group) => (
           <div key={group.section} className="mb-6">
             <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
               {group.section}

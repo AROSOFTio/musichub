@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/lib/auth-context";
+import { ModuleProvider } from "@/lib/modules/use-modules";
 
 export default function PlatformLayout({
   children,
@@ -31,8 +32,8 @@ export default function PlatformLayout({
   }
 
   if (isAdmin) {
-    return <>{children}</>;
+    return <ModuleProvider>{children}</ModuleProvider>;
   }
 
-  return <AppShell>{children}</AppShell>;
+  return <ModuleProvider><AppShell>{children}</AppShell></ModuleProvider>;
 }

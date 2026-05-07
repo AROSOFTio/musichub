@@ -1,0 +1,52 @@
+export type FeatureModuleDefinition = {
+  key: string;
+  name: string;
+  description: string;
+  category: string;
+  isCore?: boolean;
+};
+
+export const FEATURE_MODULE_DEFINITIONS: FeatureModuleDefinition[] = [
+  { key: "core_catalog", name: "Core Catalog", description: "Songs, artists, genres, and base catalog data.", category: "Core", isCore: true },
+  { key: "home", name: "Home", description: "Public homepage and feed.", category: "Core", isCore: true },
+  { key: "search", name: "Search", description: "Public search experiences and API.", category: "Core" },
+  { key: "streaming", name: "Streaming", description: "Audio streaming and play controls.", category: "Playback" },
+  { key: "continue_listening", name: "Continue Listening", description: "Recently played listening rail.", category: "Playback" },
+  { key: "recently_played", name: "Recently Played", description: "User playback history.", category: "Playback" },
+  { key: "downloads", name: "Downloads", description: "Song download buttons, routes, and API.", category: "Downloads" },
+  { key: "remix", name: "Remix Studio", description: "User remix projects and processing.", category: "Monetization" },
+  { key: "pro_plan", name: "Pro Plan", description: "Pro upsells and pro-only badges.", category: "Monetization" },
+  { key: "hero_banners", name: "Hero Banners", description: "Homepage hero carousel.", category: "Discovery" },
+  { key: "trending", name: "Trending", description: "Trending discovery pages and APIs.", category: "Discovery" },
+  { key: "latest", name: "Latest", description: "Latest published uploads.", category: "Discovery" },
+  { key: "top50", name: "Top 50", description: "Ranked top 50 chart.", category: "Discovery" },
+  { key: "all_time", name: "All Time", description: "All-time charts.", category: "Discovery" },
+  { key: "genres", name: "Genres", description: "Genre browsing.", category: "Discovery" },
+  { key: "artists", name: "Artists", description: "Artist browsing.", category: "Discovery" },
+  { key: "albums", name: "Albums", description: "Album management and browsing.", category: "Discovery" },
+  { key: "editor_picks", name: "Editor Picks", description: "Editorial picks sections and admin.", category: "Discovery" },
+  { key: "popular_artists", name: "Popular Artists", description: "Popular artist rows.", category: "Discovery" },
+  { key: "top_downloads", name: "Top Downloads", description: "Top downloads sections.", category: "Discovery" },
+  { key: "browse_by_genre", name: "Browse by Genre", description: "Genre quick browse widgets.", category: "Discovery" },
+  { key: "library", name: "Library", description: "User library pages.", category: "Library" },
+  { key: "playlists", name: "Playlists", description: "User playlist features.", category: "Library" },
+  { key: "favorites", name: "Favorites", description: "User favorites.", category: "Library" },
+  { key: "likes", name: "Likes", description: "Song likes.", category: "Community" },
+  { key: "comments", name: "Comments", description: "Song comments.", category: "Community" },
+  { key: "follows", name: "Follows", description: "Artist follows.", category: "Community" },
+  { key: "notifications", name: "Notifications", description: "User notifications.", category: "Community" },
+  { key: "upload", name: "Upload", description: "Artist/admin upload actions.", category: "Upload" },
+  { key: "admin_dashboard", name: "Admin Dashboard", description: "Admin overview dashboard.", category: "Admin" },
+  { key: "admin_songs", name: "Admin Songs", description: "Song administration.", category: "Admin" },
+  { key: "admin_artists", name: "Admin Artists", description: "Artist administration.", category: "Admin" },
+  { key: "admin_genres", name: "Admin Genres", description: "Genre administration.", category: "Admin" },
+  { key: "admin_albums", name: "Admin Albums", description: "Album administration.", category: "Admin" },
+  { key: "admin_music_types", name: "Admin Music Types", description: "Music type administration.", category: "Admin" },
+  { key: "admin_hero_banners", name: "Admin Hero Banners", description: "Hero banner administration.", category: "Admin" },
+  { key: "admin_editor_picks", name: "Admin Editor Picks", description: "Editor pick administration.", category: "Admin" },
+  { key: "admin_trending", name: "Admin Trending", description: "Trending settings and charts.", category: "Admin" },
+  { key: "admin_users", name: "Admin Users", description: "User administration.", category: "Admin" },
+  { key: "admin_messages", name: "Admin Messages", description: "Contact message administration.", category: "Admin" },
+  { key: "admin_modules", name: "Admin Modules", description: "Feature module settings.", category: "Admin", isCore: true },
+  { key: "admin_settings", name: "Admin Settings", description: "Platform settings.", category: "Admin", isCore: true },
+];

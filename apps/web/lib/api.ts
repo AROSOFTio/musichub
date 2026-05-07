@@ -138,7 +138,7 @@ export type CatalogSong = {
   artist: CatalogArtist;
   genre: CatalogGenre;
   coverImage: string | null;
-  streamUrl: string;
+  streamUrl: string | null;
   downloadUrl: string | null;
   duration: number | null;
   description: string | null;
@@ -212,13 +212,62 @@ export type AdminOverview = {
 };
 
 export type HomeFeed = {
-  featured: CatalogSong | null;
-  trending: CatalogSong[];
-  latest: CatalogSong[];
-  editorPicks: CatalogSong[];
-  topDownloads: CatalogSong[];
-  popularArtists: CatalogArtist[];
-  genres: CatalogGenre[];
+  featured?: CatalogSong | null;
+  modules: Record<string, boolean>;
+  heroBanners?: unknown[];
+  trendingNow?: CatalogSong[];
+  latestUploads?: CatalogSong[];
+  editorPicks?: CatalogSong[];
+  topDownloads?: CatalogSong[];
+  popularArtists?: CatalogArtist[];
+  continueListening?: CatalogSong[];
+  browseGenres?: CatalogGenre[];
+  genres?: CatalogGenre[];
+  trending?: CatalogSong[];
+  latest?: CatalogSong[];
+};
+
+export type FeatureModule = {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  category: string;
+  enabledPublic: boolean;
+  enabledAdmin: boolean;
+  enabledApi: boolean;
+  isCore: boolean;
+  sortOrder: number;
+};
+
+export type ModulesResponse = {
+  grouped: Record<string, FeatureModule[]>;
+  flat: FeatureModule[];
+  flags: Record<string, boolean>;
+};
+
+export type RemixProject = {
+  id: string;
+  userId: string;
+  sourceSongId: string;
+  title: string;
+  slug: string;
+  status: "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED";
+  bpm: number | null;
+  pitchShift: number;
+  tempo: number;
+  volume: number;
+  bassBoost: number;
+  trebleBoost: number;
+  reverb: number;
+  echo: number;
+  previewFile: string | null;
+  outputFile: string | null;
+  errorMessage: string | null;
+  isPublished: boolean;
+  sourceSong?: CatalogSong;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type SearchResult = {
@@ -231,6 +280,10 @@ type JsonBody = BodyInit | Record<string, unknown> | null | undefined;
 
 function getApiBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "/api";
+}
+
+export function getApiUrl(path: string) {
+  return `${getApiBaseUrl()}${path}`;
 }
 
 async function apiRequest<T>(
@@ -297,6 +350,62 @@ export function logoutRequest(accessToken: string, refreshToken?: string) {
 // ─── Home Feed ─────────────────────────────────────────────────────────────
 export function getHomeFeed() {
   return apiRequest<HomeFeed>("/home", { cache: "no-store" });
+}
+
+export function getPublicModules() {
+  return apiRequest<ModulesResponse>("/modules/public", { cache: "no-store" });
+}
+
+export function listAdminModules(accessToken: string | undefined) {
+  return apiRequest<ModulesResponse>("/admin/modules", {
+    cache: "no-store",
+    headers: authHeader(accessToken),
+  });
+}
+
+export function updateAdminModule(accessToken: string | undefined, key: string, payload: Partial<FeatureModule>) {
+  return apiRequest<FeatureModule>(`/admin/modules/${encodeURIComponent(key)}`, {
+    method: "PATCH",
+    headers: authHeader(accessToken),
+    body: payload,
+  });
+}
+
+export function listRemixProjects(accessToken: string | undefined) {
+  return apiRequest<RemixProject[]>("/remix/projects", {
+    cache: "no-store",
+    headers: authHeader(accessToken),
+  });
+}
+
+export function getRemixProject(accessToken: string | undefined, id: string) {
+  return apiRequest<RemixProject>(`/remix/projects/${id}`, {
+    cache: "no-store",
+    headers: authHeader(accessToken),
+  });
+}
+
+export function createRemixProject(accessToken: string | undefined, payload: { sourceSongId: string; title?: string }) {
+  return apiRequest<RemixProject>("/remix/projects", {
+    method: "POST",
+    headers: authHeader(accessToken),
+    body: payload,
+  });
+}
+
+export function updateRemixProject(accessToken: string | undefined, id: string, payload: Record<string, unknown>) {
+  return apiRequest<RemixProject>(`/remix/projects/${id}`, {
+    method: "PATCH",
+    headers: authHeader(accessToken),
+    body: payload,
+  });
+}
+
+export function processRemixProject(accessToken: string | undefined, id: string) {
+  return apiRequest<RemixProject>(`/remix/projects/${id}/process`, {
+    method: "POST",
+    headers: authHeader(accessToken),
+  });
 }
 
 // ─── Discovery ─────────────────────────────────────────────────────────────

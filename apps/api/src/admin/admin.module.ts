@@ -6,9 +6,10 @@ import { AdminController } from "./admin.controller";
 import { AdminService } from "./admin.service";
 
 import { CatalogModule } from "../catalog/catalog.module";
+import { FeatureModulesModule } from "../feature-modules/feature-modules.module";
 
 @Module({
-  imports: [PrismaModule, AuthModule, CatalogModule],
+  imports: [PrismaModule, AuthModule, CatalogModule, FeatureModulesModule],
   controllers: [AdminController],
   providers: [AdminService],
 })
