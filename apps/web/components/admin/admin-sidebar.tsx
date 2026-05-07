@@ -271,9 +271,11 @@ function ThemeToggle() {
 
 export function AdminSidebar({
   open,
+  docked,
   onClose,
 }: {
   open: boolean;
+  docked: boolean;
   onClose: () => void;
 }) {
   const pathname = usePathname();
@@ -323,7 +325,8 @@ export function AdminSidebar({
           <ThemeToggle />
           <button
             onClick={onClose}
-            className="lg:hidden rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+            aria-label="Close menu"
           >
             <X className="h-5 w-5" />
           </button>
@@ -370,7 +373,12 @@ export function AdminSidebar({
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-slate-200 dark:lg:border-slate-800 bg-slate-50 dark:bg-slate-950">
+      <aside
+        className={cn(
+          "hidden lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:flex-col lg:border-r lg:border-slate-200 dark:lg:border-slate-800 bg-slate-50 dark:bg-slate-950",
+          docked && "lg:flex",
+        )}
+      >
         {content}
       </aside>
 

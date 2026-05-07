@@ -661,11 +661,29 @@ export class AdminService {
   }
 
   async createLanguage(name: string) {
-    return this.prisma.language.create({ data: { name } });
+    const cleanName = name?.trim();
+    if (!cleanName) throw new BadRequestException("Language name is required.");
+
+    const existing = await this.prisma.language.findFirst({
+      where: { name: { equals: cleanName, mode: "insensitive" } },
+      include: { _count: { select: { songs: true } } },
+    });
+    if (existing) return existing;
+
+    return this.prisma.language.create({
+      data: { name: cleanName },
+      include: { _count: { select: { songs: true } } },
+    });
   }
 
   async updateLanguage(id: string, name: string) {
-    return this.prisma.language.update({ where: { id }, data: { name } });
+    const cleanName = name?.trim();
+    if (!cleanName) throw new BadRequestException("Language name is required.");
+    return this.prisma.language.update({
+      where: { id },
+      data: { name: cleanName },
+      include: { _count: { select: { songs: true } } },
+    });
   }
 
   async deleteLanguage(id: string) {

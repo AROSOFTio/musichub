@@ -18,6 +18,7 @@ type EnvShape = {
   SUPPORT_EMAIL_FROM?: string;
   SUPPORT_INBOUND_EMAIL?: string;
   SUPPORT_UPLOAD_MAX_BYTES?: string;
+  UPLOAD_MAX_AUDIO_BYTES?: string;
   SMTP_HOST?: string;
   SMTP_PORT?: string;
   SMTP_USER?: string;
@@ -53,6 +54,7 @@ export function validateEnv(config: EnvShape) {
     SUPPORT_EMAIL_FROM: config.SUPPORT_EMAIL_FROM,
     SUPPORT_INBOUND_EMAIL: config.SUPPORT_INBOUND_EMAIL,
     SUPPORT_UPLOAD_MAX_BYTES: config.SUPPORT_UPLOAD_MAX_BYTES || "10485760",
+    UPLOAD_MAX_AUDIO_BYTES: config.UPLOAD_MAX_AUDIO_BYTES || "314572800",
     SMTP_HOST: config.SMTP_HOST,
     SMTP_PORT: config.SMTP_PORT || "587",
     SMTP_USER: config.SMTP_USER,

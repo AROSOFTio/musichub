@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Album, BarChart3, Download, Mic2, Music2, Play, Tag, TrendingUp, Users,
+  Album, BarChart3, Mic2, Music2, Play, Tag,
 } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminStatCard } from "@/components/admin/admin-stat-card";
@@ -67,11 +67,10 @@ export default function AdminOverviewPage() {
             <AdminStatCard label="Genres" value={data.totalGenres} icon={Tag} color="amber" helper="Music genres" />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <AdminStatCard label="Albums" value={data.totalAlbums} icon={Album} color="violet" />
             <AdminStatCard label="Music Types" value={data.totalMusicTypes} icon={Music2} color="blue" />
             <AdminStatCard label="Total Plays" value={data.totalPlays} icon={Play} color="emerald" />
-            <AdminStatCard label="Total Downloads" value={data.totalDownloads} icon={Download} color="slate" />
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">

@@ -84,8 +84,8 @@ export default function AddSongPage() {
       }
       setModalConfig(null);
       setModalInput("");
-    } catch {
-      alert(`Failed to add ${modalConfig.type}`);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : `Failed to add ${modalConfig.type}`);
     } finally {
       setModalLoading(false);
     }
@@ -212,7 +212,7 @@ export default function AddSongPage() {
           
           <label className="block text-sm font-medium text-slate-600 dark:text-slate-400">
             Audio file <span className="text-red-500">*</span>
-            <input name="audio" required type="file" accept="audio/mpeg,audio/mp3,audio/wav" className="mt-2 block w-full text-sm text-slate-500 file:mr-3 file:rounded-xl file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-violet-900/30 dark:file:text-violet-400 dark:hover:file:bg-violet-900/50 transition cursor-pointer" />
+            <input name="audio" required type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/aac,audio/mp4,audio/x-m4a,.mp3,.wav,.aac,.m4a" className="mt-2 block w-full text-sm text-slate-500 file:mr-3 file:rounded-xl file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-violet-900/30 dark:file:text-violet-400 dark:hover:file:bg-violet-900/50 transition cursor-pointer" />
           </label>
           
           <label className="block text-sm font-medium text-slate-600 dark:text-slate-400">

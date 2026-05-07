@@ -10,7 +10,8 @@ export function AdminTopbar({ onMenuClick }: { onMenuClick: () => void }) {
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-slate-200 bg-white px-4 sm:px-6">
       <button
         onClick={onMenuClick}
-        className="lg:hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+        className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+        aria-label="Toggle menu"
       >
         <Menu className="h-5 w-5" />
       </button>

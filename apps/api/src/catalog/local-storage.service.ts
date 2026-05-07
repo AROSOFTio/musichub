@@ -20,7 +20,16 @@ type UploadedFile = {
   originalname: string;
 };
 
-const AUDIO_TYPES = new Set(["audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav"]);
+const AUDIO_TYPES = new Set([
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/aac",
+  "audio/mp4",
+  "audio/x-m4a",
+  "audio/m4a",
+]);
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 @Injectable()
@@ -37,7 +46,7 @@ export class LocalStorageService {
     }
 
     if (!AUDIO_TYPES.has(file.mimetype)) {
-      throw new BadRequestException("Only MP3 and WAV audio files are supported.");
+      throw new BadRequestException("Only MP3, WAV, AAC, and M4A audio files are supported.");
     }
 
     return this.saveFile("audio", file);
@@ -98,6 +107,14 @@ export class LocalStorageService {
 
     if (file.mimetype === "audio/wav" || file.mimetype === "audio/x-wav") {
       return ".wav";
+    }
+
+    if (file.mimetype === "audio/aac") {
+      return ".aac";
+    }
+
+    if (file.mimetype === "audio/mp4" || file.mimetype === "audio/x-m4a" || file.mimetype === "audio/m4a") {
+      return ".m4a";
     }
 
     if (file.mimetype.startsWith("image/")) {

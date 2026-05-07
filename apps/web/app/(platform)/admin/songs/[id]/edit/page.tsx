@@ -98,8 +98,8 @@ export default function EditSongPage({ params }: { params: { id: string } }) {
       }
       setModalConfig(null);
       setModalInput("");
-    } catch {
-      alert(`Failed to add ${modalConfig.type}`);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : `Failed to add ${modalConfig.type}`);
     } finally {
       setModalLoading(false);
     }

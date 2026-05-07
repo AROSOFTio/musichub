@@ -28,6 +28,8 @@ import { RolesGuard } from "../auth/guards/roles.guard";
 import { CatalogService } from "./catalog.service";
 import { SongUploadDto } from "./dto/song-upload.dto";
 
+const songUploadMaxBytes = Number(process.env.UPLOAD_MAX_AUDIO_BYTES || 300 * 1024 * 1024);
+
 const songFileInterceptor = FileFieldsInterceptor(
   [
     { name: "audio", maxCount: 1 },
@@ -35,7 +37,7 @@ const songFileInterceptor = FileFieldsInterceptor(
   ],
   {
     limits: {
-      fileSize: 50 * 1024 * 1024,
+      fileSize: songUploadMaxBytes,
     },
   },
 );
