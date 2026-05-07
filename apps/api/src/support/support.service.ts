@@ -151,9 +151,11 @@ export class SupportService {
 
   async setStatus(id: string, status: SupportTicketStatus) {
     await this.featureModules.assertEnabled("contact_support", "api");
+    const shouldClose =
+      status === SupportTicketStatus.CLOSED || status === SupportTicketStatus.RESOLVED;
     await this.prisma.supportTicket.update({
       where: { id },
-      data: { status, closedAt: [SupportTicketStatus.CLOSED, SupportTicketStatus.RESOLVED].includes(status) ? new Date() : null },
+      data: { status, closedAt: shouldClose ? new Date() : null },
     });
     return this.getTicket(id);
   }
