@@ -1,23 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$ROOT_DIR"
+APP_DIR="${APP_DIR:-/www/wwwroot/hub.arosoft.io}"
+REPO_URL="${REPO_URL:-https://github.com/AROSOFTio/musichub-modular.git}"
+BRANCH="${BRANCH:-main}"
 
-echo "Pulling latest code..."
-git pull origin main
+cd "$APP_DIR"
 
-echo "Installing dependencies..."
-npm install
+echo "Configuring git safe directory..."
+sudo git config --global --add safe.directory "$APP_DIR" || true
 
-echo "Building project..."
-npm run build
+echo "Syncing code from $REPO_URL ($BRANCH)..."
+sudo git remote set-url origin "$REPO_URL"
+sudo git fetch origin "$BRANCH"
+sudo git reset --hard "origin/$BRANCH"
 
-echo "Starting Docker containers..."
-sudo docker compose down
-sudo docker compose up -d --build
+if [ ! -f .env ]; then
+  echo "Creating .env from .env.example..."
+  sudo cp .env.example .env
+  echo "Edit $APP_DIR/.env with production secrets, then rerun this script."
+  exit 1
+fi
 
-echo "Checking containers..."
+echo "Rebuilding and starting containers..."
+sudo docker compose down --remove-orphans
+sudo docker compose build --no-cache
+sudo docker compose up -d
+
+echo "Running database migrations and seed..."
+sudo docker compose exec api npm run prisma:migrate:deploy
+sudo docker compose exec api npm run seed
+
+echo "Container status..."
 sudo docker compose ps
-
-echo "Deployment complete."
