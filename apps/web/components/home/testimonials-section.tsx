@@ -11,7 +11,6 @@ import type { ModuleFlags } from "@/lib/modules/module-keys";
 export function TestimonialsSection({ testimonials, modules }: { testimonials?: HomeTestimonial[]; modules: ModuleFlags }) {
   if (!hasModule(modules, MODULE_KEYS.testimonials)) return null;
   const visible = testimonials ?? [];
-  if (!visible.length) return null;
 
   return (
     <section className="rounded-3xl border border-borderSoft bg-[var(--card-bg)] p-5 shadow-sm">
@@ -19,6 +18,11 @@ export function TestimonialsSection({ testimonials, modules }: { testimonials?: 
         <h2 className="text-lg font-black text-[var(--foreground)]">What People Say</h2>
         <Link href="/about" className="text-xs font-black text-violet-700">View all</Link>
       </div>
+      {!visible.length ? (
+        <div className="rounded-2xl border border-dashed border-borderSoft bg-[var(--surface)] p-5 text-sm text-[var(--muted)]">
+          No public testimonials have been published yet.
+        </div>
+      ) : null}
       <div className="space-y-4">
         {visible.slice(0, 2).map((item) => (
           <article key={item.id} className="flex gap-3">

@@ -16,6 +16,18 @@ export class UpsertHeroBannerDto {
 
   @IsOptional()
   @IsString()
+  mobileImage?: string;
+
+  @IsOptional()
+  @IsString()
+  sponsorLabel?: string;
+
+  @IsOptional()
+  @IsString()
+  placement?: string;
+
+  @IsOptional()
+  @IsString()
   linkedSongId?: string;
 
   @IsOptional()

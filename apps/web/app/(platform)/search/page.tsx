@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { Search as SearchIcon, Music, Users, Layers, Disc3 } from "lucide-react";
+import { Search as SearchIcon, Music, Users, Layers, Disc3, Tags, Languages, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { searchAll, CatalogSong, CatalogArtist, CatalogGenre, CatalogAlbum, SearchResult } from "@/lib/api";
@@ -98,7 +98,10 @@ function SearchPageContent() {
     ? results.songs.length +
       (hasModule(modules, MODULE_KEYS.artists) ? results.artists.length : 0) +
       (hasModule(modules, MODULE_KEYS.albums) ? (results.albums?.length ?? 0) : 0) +
-      (hasModule(modules, MODULE_KEYS.genres) ? results.genres.length : 0)
+      (hasModule(modules, MODULE_KEYS.genres) ? results.genres.length : 0) +
+      (results.musicTypes?.length ?? 0) +
+      (results.languages?.length ?? 0) +
+      (hasModule(modules, MODULE_KEYS.events) ? (results.events?.length ?? 0) : 0)
     : 0;
 
   return (
@@ -194,7 +197,7 @@ function SearchPageContent() {
                 {results.albums?.map((album: CatalogAlbum) => (
                   <Link
                     key={album.id}
-                    href={`/search?q=${encodeURIComponent(album.title)}`}
+                    href={`/albums/${album.slug}`}
                     className="flex items-center gap-4 rounded-2xl border border-borderSoft bg-white p-4 transition-colors hover:border-violet-300 hover:bg-violet-50"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-100">
@@ -226,6 +229,30 @@ function SearchPageContent() {
                     {genre.name} <span className="opacity-60">({genre._count?.songs ?? 0})</span>
                   </Link>
                 ))}
+              </div>
+            </section>
+          )}
+          {(results.musicTypes?.length ?? 0) > 0 && (
+            <section>
+              <SectionLabel icon={Tags} label="Music Types" count={results.musicTypes?.length ?? 0} />
+              <div className="flex flex-wrap gap-3">
+                {results.musicTypes?.map((item) => <Link key={item.id} href={`/music-types/${item.slug}`} className="rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100 transition-colors">{item.name}</Link>)}
+              </div>
+            </section>
+          )}
+          {(results.languages?.length ?? 0) > 0 && (
+            <section>
+              <SectionLabel icon={Languages} label="Languages" count={results.languages?.length ?? 0} />
+              <div className="flex flex-wrap gap-3">
+                {results.languages?.map((item) => <Link key={item.id} href={`/languages/${item.slug}`} className="rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100 transition-colors">{item.name}</Link>)}
+              </div>
+            </section>
+          )}
+          {hasModule(modules, MODULE_KEYS.events) && (results.events?.length ?? 0) > 0 && (
+            <section>
+              <SectionLabel icon={CalendarDays} label="Events" count={results.events?.length ?? 0} />
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {results.events?.map((event) => <Link key={event.id} href={`/events/${event.slug}`} className="rounded-2xl border border-borderSoft bg-white p-4 transition-colors hover:border-violet-300 hover:bg-violet-50"><p className="font-semibold text-slate-950">{event.title}</p><p className="mt-1 text-sm text-slate-500">{event.location}</p></Link>)}
               </div>
             </section>
           )}

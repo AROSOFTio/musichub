@@ -191,6 +191,7 @@ model Album {
 model Language {
   id        String   @id @default(uuid())
   name      String   @unique
+  slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -317,6 +318,7 @@ model HeroBanner {
 model Event {
   id        String   @id @default(uuid())
   title     String
+  slug      String   @unique
   location  String
   date      DateTime
   image     String?

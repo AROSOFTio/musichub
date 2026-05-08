@@ -177,7 +177,7 @@ export class CatalogService {
     const q = query?.trim();
     if (!q) return { songs: [], artists: [], genres: [] };
 
-    const [songs, artists, genres, albums] = await Promise.all([
+    const [songs, artists, genres, albums, musicTypes, languages, events] = await Promise.all([
       this.prisma.song.findMany({
         where: {
           isPublished: true,
@@ -220,6 +220,32 @@ export class CatalogService {
         },
         take: 10,
       }),
+      this.prisma.musicType.findMany({
+        where: {
+          isActive: true,
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { description: { contains: q, mode: "insensitive" } },
+          ],
+        },
+        include: { _count: { select: { songs: true } } },
+        take: 10,
+      }),
+      this.prisma.language.findMany({
+        where: { name: { contains: q, mode: "insensitive" } },
+        include: { _count: { select: { songs: true } } },
+        take: 10,
+      }),
+      this.prisma.event.findMany({
+        where: {
+          isActive: true,
+          OR: [
+            { title: { contains: q, mode: "insensitive" } },
+            { location: { contains: q, mode: "insensitive" } },
+          ],
+        },
+        take: 10,
+      }),
     ]);
 
     return {
@@ -227,6 +253,9 @@ export class CatalogService {
       artists,
       genres,
       albums,
+      musicTypes,
+      languages,
+      events,
     };
   }
 
@@ -298,6 +327,89 @@ export class CatalogService {
       ...artist,
       songs: artist.songs.map((s) => this.toSongResponse(s, modules)),
     };
+  }
+
+  async listAlbums() {
+    await this.featureModules.assertEnabled("albums", "api");
+    return this.prisma.album.findMany({
+      where: { isPublished: true },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        artist: { select: { id: true, name: true, slug: true } },
+        _count: { select: { songs: true } },
+      },
+    });
+  }
+
+  async getAlbumBySlug(slug: string) {
+    await this.featureModules.assertEnabled("albums", "api");
+    const modules = await this.featureModules.getFlags("public");
+    const album = await this.prisma.album.findFirst({
+      where: { slug, isPublished: true },
+      include: {
+        artist: { select: { id: true, name: true, slug: true } },
+        songs: { where: { isPublished: true }, include: songInclude, orderBy: { createdAt: "desc" } },
+        _count: { select: { songs: true } },
+      },
+    });
+    if (!album) throw new NotFoundException("Album was not found.");
+    return { ...album, songs: album.songs.map((song) => this.toSongResponse(song, modules)) };
+  }
+
+  async listMusicTypes() {
+    return this.prisma.musicType.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      include: { _count: { select: { songs: true } } },
+    });
+  }
+
+  async getMusicTypeBySlug(slug: string) {
+    const modules = await this.featureModules.getFlags("public");
+    const musicType = await this.prisma.musicType.findFirst({
+      where: { slug, isActive: true },
+      include: {
+        songs: { where: { isPublished: true }, include: songInclude, orderBy: { createdAt: "desc" } },
+        _count: { select: { songs: true } },
+      },
+    });
+    if (!musicType) throw new NotFoundException("Music type was not found.");
+    return { ...musicType, songs: musicType.songs.map((song) => this.toSongResponse(song, modules)) };
+  }
+
+  async listLanguages() {
+    return this.prisma.language.findMany({
+      orderBy: { name: "asc" },
+      include: { _count: { select: { songs: true } } },
+    });
+  }
+
+  async getLanguageBySlug(slug: string) {
+    const modules = await this.featureModules.getFlags("public");
+    const language = await this.prisma.language.findFirst({
+      where: { slug },
+      include: {
+        songs: { where: { isPublished: true }, include: songInclude, orderBy: { createdAt: "desc" } },
+        _count: { select: { songs: true } },
+      },
+    });
+    if (!language) throw new NotFoundException("Language was not found.");
+    return { ...language, songs: language.songs.map((song) => this.toSongResponse(song, modules)) };
+  }
+
+  async listEvents() {
+    await this.featureModules.assertEnabled("events", "api");
+    return this.prisma.event.findMany({
+      where: { isActive: true },
+      orderBy: [{ date: "asc" }, { priority: "asc" }],
+    });
+  }
+
+  async getEvent(slug: string) {
+    await this.featureModules.assertEnabled("events", "api");
+    const event = await this.prisma.event.findFirst({ where: { slug, isActive: true } });
+    if (!event) throw new NotFoundException("Event was not found.");
+    return event;
   }
 
   // ── Editor pick toggle (admin) ─────────────────────────────────────────
@@ -674,7 +786,7 @@ export class CatalogService {
     if (existing) return existing;
 
     try {
-      return await this.prisma.language.create({ data: { name } });
+      return await this.prisma.language.create({ data: { name, slug: await this.uniqueLanguageSlug(name) } });
     } catch (error: any) {
       if (error?.code === "P2002") {
         return this.prisma.language.findFirstOrThrow({
@@ -711,6 +823,13 @@ export class CatalogService {
     return this.uniqueSlug(value, async (slug) => {
       const song = await this.prisma.song.findUnique({ where: { slug } });
       return Boolean(song && song.id !== existingId);
+    });
+  }
+
+  private async uniqueLanguageSlug(value: string, existingId?: string) {
+    return this.uniqueSlug(value, async (slug) => {
+      const existing = await this.prisma.language.findUnique({ where: { slug } });
+      return Boolean(existing && existing.id !== existingId);
     });
   }
 
@@ -777,6 +896,8 @@ export class CatalogService {
       isEditorPick: (song as any).isEditorPick ?? false,
       downloadCount: song.downloadCount,
       playCount: song.playCount,
+      seoTitle: (song as any).seoTitle ?? null,
+      seoDescription: (song as any).seoDescription ?? null,
       createdAt: song.createdAt,
       updatedAt: song.updatedAt,
     };

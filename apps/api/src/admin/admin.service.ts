@@ -654,6 +654,9 @@ export class AdminService {
         title: dto.title.trim(),
         subtitle: dto.subtitle || null,
         image: dto.image || null,
+        mobileImage: dto.mobileImage || null,
+        sponsorLabel: dto.sponsorLabel || null,
+        placement: dto.placement || "homepage_hero",
         linkedSongId: dto.linkedSongId || null,
         linkedArtistId: dto.linkedArtistId || null,
         ctaLabel: dto.ctaLabel || null,
@@ -675,6 +678,9 @@ export class AdminService {
         title: dto.title?.trim() ?? existing.title,
         subtitle: dto.subtitle ?? existing.subtitle,
         image: dto.image ?? existing.image,
+        mobileImage: dto.mobileImage ?? existing.mobileImage,
+        sponsorLabel: dto.sponsorLabel ?? existing.sponsorLabel,
+        placement: dto.placement ?? existing.placement,
         linkedSongId: dto.linkedSongId ?? existing.linkedSongId,
         linkedArtistId: dto.linkedArtistId ?? existing.linkedArtistId,
         ctaLabel: dto.ctaLabel ?? existing.ctaLabel,
@@ -721,7 +727,7 @@ export class AdminService {
 
     try {
       return await this.prisma.language.create({
-        data: { name: cleanName },
+        data: { name: cleanName, slug: await this.uniqueLanguageSlug(cleanName) },
         include: { _count: { select: { songs: true } } },
       });
     } catch (error: any) {
@@ -741,7 +747,7 @@ export class AdminService {
     if (!cleanName) throw new BadRequestException("Language name is required.");
     return this.prisma.language.update({
       where: { id },
-      data: { name: cleanName },
+      data: { name: cleanName, slug: await this.uniqueLanguageSlug(cleanName, id) },
       include: { _count: { select: { songs: true } } },
     });
   }
@@ -840,6 +846,13 @@ export class AdminService {
   private async uniqueMusicTypeSlug(value: string, existingId?: string) {
     return this.uniqueSlug(value, async (slug) => {
       const r = await this.prisma.musicType.findUnique({ where: { slug } });
+      return Boolean(r && r.id !== existingId);
+    });
+  }
+
+  private async uniqueLanguageSlug(value: string, existingId?: string) {
+    return this.uniqueSlug(value, async (slug) => {
+      const r = await this.prisma.language.findUnique({ where: { slug } });
       return Boolean(r && r.id !== existingId);
     });
   }

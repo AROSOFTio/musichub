@@ -79,6 +79,25 @@ export type CatalogAlbum = {
   artist?: { id: string; name: string; slug: string };
   coverImage?: string | null;
   releaseDate?: string | null;
+  description?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  _count?: { songs: number };
+};
+
+export type CatalogMusicType = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  typeCategory?: string;
+  _count?: { songs: number };
+};
+
+export type CatalogLanguage = {
+  id: string;
+  name: string;
+  slug: string;
   _count?: { songs: number };
 };
 
@@ -98,6 +117,7 @@ export type AdminMusicType = {
 export type AdminLanguage = {
   id: string;
   name: string;
+  slug: string;
   createdAt: string;
   updatedAt: string;
   _count: { songs: number };
@@ -121,6 +141,9 @@ export type AdminHeroBanner = {
   title: string;
   subtitle: string | null;
   image: string | null;
+  mobileImage: string | null;
+  sponsorLabel: string | null;
+  placement: string;
   linkedSongId: string | null;
   linkedArtistId: string | null;
   ctaLabel: string | null;
@@ -163,6 +186,8 @@ export type CatalogSong = {
   isEditorPick: boolean;
   downloadCount: number;
   playCount: number;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -248,11 +273,12 @@ export type HomeFeed = {
 export type HomeEvent = {
   id: string;
   title: string;
+  slug: string;
   location: string;
   date: string;
   image?: string | null;
-  ctaLabel?: string;
-  ctaUrl?: string;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
 };
 
 export type HomeTestimonial = {
@@ -369,6 +395,9 @@ export type SearchResult = {
   artists: CatalogArtist[];
   genres: CatalogGenre[];
   albums?: CatalogAlbum[];
+  musicTypes?: CatalogMusicType[];
+  languages?: CatalogLanguage[];
+  events?: HomeEvent[];
 };
 
 type JsonBody = BodyInit | Record<string, unknown> | null | undefined;
@@ -610,6 +639,38 @@ export function listArtists() {
 
 export function getArtist(slug: string) {
   return apiRequest<CatalogArtist & { songs: CatalogSong[] }>(`/artists/${encodeURIComponent(slug)}`, { cache: "no-store" });
+}
+
+export function listAlbums() {
+  return apiRequest<CatalogAlbum[]>("/albums", { cache: "no-store" });
+}
+
+export function getAlbum(slug: string) {
+  return apiRequest<CatalogAlbum & { songs: CatalogSong[] }>(`/albums/${encodeURIComponent(slug)}`, { cache: "no-store" });
+}
+
+export function listMusicTypes() {
+  return apiRequest<CatalogMusicType[]>("/music-types", { cache: "no-store" });
+}
+
+export function getMusicType(slug: string) {
+  return apiRequest<CatalogMusicType & { songs: CatalogSong[] }>(`/music-types/${encodeURIComponent(slug)}`, { cache: "no-store" });
+}
+
+export function listLanguages() {
+  return apiRequest<CatalogLanguage[]>("/languages", { cache: "no-store" });
+}
+
+export function getLanguage(slug: string) {
+  return apiRequest<CatalogLanguage & { songs: CatalogSong[] }>(`/languages/${encodeURIComponent(slug)}`, { cache: "no-store" });
+}
+
+export function listEvents() {
+  return apiRequest<HomeEvent[]>("/events", { cache: "no-store" });
+}
+
+export function getEvent(slug: string) {
+  return apiRequest<HomeEvent>(`/events/${encodeURIComponent(slug)}`, { cache: "no-store" });
 }
 
 // ─── Public Songs ──────────────────────────────────────────────────────────

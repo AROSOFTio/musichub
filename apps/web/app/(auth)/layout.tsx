@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+
 import { Logo } from "@/components/ui/logo";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default function AuthLayout({
   children,
@@ -9,7 +15,6 @@ export default function AuthLayout({
 }>) {
   return (
     <main className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 gap-4">
-      {/* Go back link above the card */}
       <div className="w-full max-w-md">
         <Link
           href="/"

@@ -111,6 +111,46 @@ export class CatalogController {
   }
 
   // ── Songs CRUD ──────────────────────────────────────────────────────────
+  @Get("albums")
+  listAlbums() {
+    return this.catalogService.listAlbums();
+  }
+
+  @Get("albums/:slug")
+  getAlbum(@Param("slug") slug: string) {
+    return this.catalogService.getAlbumBySlug(slug);
+  }
+
+  @Get("music-types")
+  listMusicTypes() {
+    return this.catalogService.listMusicTypes();
+  }
+
+  @Get("music-types/:slug")
+  getMusicType(@Param("slug") slug: string) {
+    return this.catalogService.getMusicTypeBySlug(slug);
+  }
+
+  @Get("languages")
+  listLanguages() {
+    return this.catalogService.listLanguages();
+  }
+
+  @Get("languages/:slug")
+  getLanguage(@Param("slug") slug: string) {
+    return this.catalogService.getLanguageBySlug(slug);
+  }
+
+  @Get("events")
+  listEvents() {
+    return this.catalogService.listEvents();
+  }
+
+  @Get("events/:slug")
+  getEvent(@Param("slug") slug: string) {
+    return this.catalogService.getEvent(slug);
+  }
+
   @Get("songs")
   listSongs(@Query("q") query?: string) {
     return this.catalogService.listPublished(query);

@@ -2,7 +2,7 @@
 
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { Disc3, Layers, Mic2, Music, Search, type LucideIcon } from "lucide-react";
+import { CalendarDays, Disc3, Languages, Layers, Mic2, Music, Search, Tags, type LucideIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { searchAll, type SearchResult } from "@/lib/api";
 import { MODULE_KEYS } from "@/lib/modules/module-keys";
@@ -83,9 +83,12 @@ function SearchBoxForm() {
             <div className="max-h-96 overflow-y-auto p-2">
               <SuggestionGroup title="Songs" enabled={true} items={results.songs.slice(0, 4)} icon={Music} getHref={(item) => `/songs/${item.slug}`} getLabel={(item) => item.title} getMeta={(item) => item.artist.name} />
               <SuggestionGroup title="Artists" enabled={hasModule(modules, MODULE_KEYS.artists)} items={results.artists.slice(0, 4)} icon={Mic2} getHref={(item) => `/artists/${item.slug}`} getLabel={(item) => item.name} getMeta={(item) => `${item._count?.songs ?? 0} songs`} />
-              <SuggestionGroup title="Albums" enabled={hasModule(modules, MODULE_KEYS.albums)} items={(results.albums ?? []).slice(0, 4)} icon={Disc3} getHref={(item) => `/search?q=${encodeURIComponent(item.title)}`} getLabel={(item) => item.title} getMeta={(item) => item.artist?.name ?? "Album"} />
+              <SuggestionGroup title="Albums" enabled={hasModule(modules, MODULE_KEYS.albums)} items={(results.albums ?? []).slice(0, 4)} icon={Disc3} getHref={(item) => `/albums/${item.slug}`} getLabel={(item) => item.title} getMeta={(item) => item.artist?.name ?? "Album"} />
               <SuggestionGroup title="Genres" enabled={hasModule(modules, MODULE_KEYS.genres)} items={results.genres.slice(0, 4)} icon={Layers} getHref={(item) => `/genres/${item.slug}`} getLabel={(item) => item.name} getMeta={(item) => `${item._count?.songs ?? 0} songs`} />
-              {!results.songs.length && !results.artists.length && !(results.albums ?? []).length && !results.genres.length ? (
+              <SuggestionGroup title="Music Types" enabled={true} items={(results.musicTypes ?? []).slice(0, 4)} icon={Tags} getHref={(item) => `/music-types/${item.slug}`} getLabel={(item) => item.name} getMeta={(item) => `${item._count?.songs ?? 0} songs`} />
+              <SuggestionGroup title="Languages" enabled={true} items={(results.languages ?? []).slice(0, 4)} icon={Languages} getHref={(item) => `/languages/${item.slug}`} getLabel={(item) => item.name} getMeta={(item) => `${item._count?.songs ?? 0} songs`} />
+              <SuggestionGroup title="Events" enabled={hasModule(modules, MODULE_KEYS.events)} items={(results.events ?? []).slice(0, 4)} icon={CalendarDays} getHref={(item) => `/events/${item.slug}`} getLabel={(item) => item.title} getMeta={(item) => item.location} />
+              {!results.songs.length && !results.artists.length && !(results.albums ?? []).length && !results.genres.length && !(results.musicTypes ?? []).length && !(results.languages ?? []).length && !(results.events ?? []).length ? (
                 <p className="px-3 py-4 text-sm text-[var(--muted)]">No results found.</p>
               ) : null}
             </div>
