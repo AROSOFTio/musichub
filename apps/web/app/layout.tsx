@@ -10,10 +10,15 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:4008";
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "Musichub",
-    template: "%s | Musichub",
+    default: "MusicHub",
+    template: "%s | MusicHub",
   },
-  description: "Musichub is a public music streaming and free-download platform with an admin dashboard for uploads.",
+  description: "MusicHub is a public music streaming and free-download platform with an admin dashboard for uploads.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg",
+    apple: "/apple-touch-icon.svg",
+  },
 };
 
 export default function RootLayout({
